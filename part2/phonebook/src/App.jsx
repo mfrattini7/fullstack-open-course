@@ -13,6 +13,8 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
 
+  const personsToShow = persons.filter(it => it.name.toLowerCase().startsWith(filter.toLowerCase()))
+
   useEffect(() => {
     personsService.getAll().then(p => setPersons(p))
   }, [])
@@ -21,8 +23,15 @@ const App = () => {
     event.preventDefault()
     const names = persons.map(it => it.name)
     if (names.includes(newName)) {
-      alert(`${newName} is already added to phonebook`)
-      return
+      if (confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
+        const p = persons.filter(it => it.name === newName)[0]
+        personsService.update(p.id, {...p, number:newNumber}).then(
+          setPersons(personsToShow.map(it => it.id === p.id ? {...p, number: newNumber} : it))
+        )
+        return
+      } else {
+        return
+      }
     }
     
     personsService.create({name: newName, number: newNumber})
@@ -41,7 +50,13 @@ const App = () => {
     setFilter(event.target.value)
   }
 
-  const personsToShow = persons.filter(it => it.name.toLowerCase().startsWith(filter.toLowerCase()))
+  const handleDelete = (id, name) => {
+    if (confirm("delete " + name + "?")) {
+      personsService.erase(id).then(
+        setPersons(personsToShow.filter(it => it.id != id))
+      )
+    }
+  }
 
   return (
     <div>
@@ -56,7 +71,7 @@ const App = () => {
          handleNumberChange={handleNumberChange}
       />
 
-      <NumbersList persons={personsToShow} />
+      <NumbersList persons={personsToShow} handleDelete={handleDelete}/>
 
     </div>
   )
