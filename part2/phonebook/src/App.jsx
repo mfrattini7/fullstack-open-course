@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
 
 import NumbersList from './components/NumbersList'
 import Form from './components/Form'
 import Filter from './components/Filter'
+import Notification from './components/Notification'
+import Error from './components/Error'
+
 import personsService  from './services/persons'
+
+import './index.css'
+
 
 const App = () => {
 
@@ -12,6 +17,8 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
+  const [notification, setNotification] = useState(null)
+  const [error, setError] = useState(null)
 
   const personsToShow = persons.filter(it => it.name.toLowerCase().startsWith(filter.toLowerCase()))
 
@@ -25,17 +32,28 @@ const App = () => {
     if (names.includes(newName)) {
       if (confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
         const p = persons.filter(it => it.name === newName)[0]
-        personsService.update(p.id, {...p, number:newNumber}).then(
+        personsService.update(p.id, {...p, number:newNumber})
+        .then(() =>{
           setPersons(personsToShow.map(it => it.id === p.id ? {...p, number: newNumber} : it))
+          setNotification("Number changed")
+          setTimeout(() => {setNotification(null)}, 5000)
+        }
+        )
+        .catch(() => {
+          setError("Information of " + p.name + " has already been removed from the server")
+          setTimeout(() => {setError(null)}, 5000)
+          hasError = true
+        }
         )
         return
       } else {
         return
       }
     }
-    
     personsService.create({name: newName, number: newNumber})
     .then(it => setPersons(persons.concat(it)))
+        setNotification("Added " + newName)
+        setTimeout(() => {setNotification(null)}, 5000)
   }
 
   const handleNameChange = (event) => {
@@ -63,6 +81,9 @@ const App = () => {
       <h2>Phonebook</h2>
 
       <Filter filter={filter} handleFilterChange={handleFilterChange}/>
+
+      <Notification message={notification}/>
+      <Error message={error}/>
 
       <Form addPerson={addPerson}
          newName={newName}
