@@ -37,14 +37,11 @@ const App = () => {
           setPersons(personsToShow.map(it => it.id === p.id ? {...p, number: newNumber} : it))
           setNotification("Number changed")
           setTimeout(() => {setNotification(null)}, 5000)
-        }
-        )
+        })
         .catch(() => {
           setError("Information of " + p.name + " has already been removed from the server")
           setTimeout(() => {setError(null)}, 5000)
-          hasError = true
-        }
-        )
+        })
         return
       } else {
         return
