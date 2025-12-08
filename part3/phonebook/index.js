@@ -38,7 +38,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
     .catch(error => next(error))
 })
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
   const body = request.body
 
   if (!body.name) {
@@ -58,15 +58,49 @@ app.post('/api/persons', (request, response) => {
     number: body.number,
   })
 
-  person.save().then(savedPerson => {
-    response.json(person)
-  })
+  person.save()
+    .then(savedPerson => {
+      response.json(person)
+    })
+    .catch(error => next(error))
+})
+
+app.put('/api/persons/:id', (request, response, next) => {
+  const body = request.body
+
+  if (!body.name) {
+    return response.status(400).json({ 
+      error: 'name missing' 
+    })
+  }
+
+  if (!body.number) {
+    return response.status(400).json({ 
+      error: 'number missing' 
+    })
+  }
+
+  const updated = {
+    name: body.name,
+    number: body.number,
+  }
+
+  Person.findByIdAndUpdate(request.params.id, updated)
+    .then(person => {
+      if(!person) {
+        return response.status(404).end()
+      } else {
+        response.json(person)
+      }
+    })
+    .catch(error => next(error)) 
 })
 
 app.get('/info', (request, response) => {
-  const num = persons.length
-  const date = new Date()
-  return response.send(`Phonebook has info for ${num} people.<br>${date}`)
+  Person.find({}).then(persons => {
+    const date = new Date()
+    response.send(`Phonebook has info for ${persons.length} people.<br>${date}`)
+  })
 })
 
 const unknownEndpoint = (request, response) => {
