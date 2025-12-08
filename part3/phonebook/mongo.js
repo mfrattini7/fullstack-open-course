@@ -7,6 +7,7 @@ if (process.argv.length < 3) {
 
 const password = process.argv[2]
 
+
 const url = `mongodb+srv://marcellofrattinigeneric_db_user:${password}@mycluster.vu4eylm.mongodb.net/phonebookApp?appName=phonebook`
 
 mongoose.set('strictQuery',false)
@@ -20,12 +21,20 @@ const personSchema = new mongoose.Schema({
 
 const Person = mongoose.model('Person', personSchema)
 
-const person = new Person({
-  name: 'Giuseppe Garibaldi',
-  number: "1234 5678",
-})
+if (process.argv.length === 3) {
+  Person.find({}).then(result => {
+    console.log("phonebook:")
+    result.forEach(person => {console.log(person)})
+    mongoose.connection.close()
+  })
+} else {
+  const person = new Person({
+    name: process.argv[3],
+    number: process.argv[4]
+  })
 
-person.save().then(result => {
-  console.log('person saved!')
-  mongoose.connection.close()
-})
+  person.save().then(result => { 
+    console.log(`added ${person.name} ${person.number} to phonebook`)
+    mongoose.connection.close()
+  })
+}
