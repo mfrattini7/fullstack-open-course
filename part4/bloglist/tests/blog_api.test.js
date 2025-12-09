@@ -97,3 +97,7 @@ test('can delete a blog', async () => {
   const blogsAtEnd = await helper.blogsInDb()
   assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length - 1)
 })
+
+test('can update a blog', async () => {
+  
+})
