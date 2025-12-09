@@ -28,13 +28,11 @@ test('blogs are returned as json', async () => {
 
 test('all blogs are returned', async () => {
   const response = await api.get('/api/blogs')
-
   assert.strictEqual(response.body.length, helper.initialBlogs.length)
 })
 
 test('a specific blog is within the returned blogs', async () => {
   const response = await api.get('/api/blogs')
-
   const titles = response.body.map(e => e.title)
   assert.strictEqual(titles.includes('title 1'), true)
 })
@@ -46,15 +44,11 @@ test('a valid blog can be added ', async () => {
     url: 'url 4',
     likes: 4
   }
-
   await api.post('/api/blogs').send(newBlog)
     .expect(201)
     .expect('Content-Type', /application\/json/)
-
   const blogsAtEnd = await helper.blogsInDb()
-
   assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
-
   assert(blogsAtEnd.map(it => it.title).includes('title 4'))
 })
 
@@ -69,13 +63,11 @@ test('a valid blog with no likes can be added and will have 0 likes', async () =
     author: 'author 5',
     url: 'url 5',
   }
-
   const created = await api
     .post('/api/blogs')
     .send(newBlog)
     .expect(201)
     .expect('Content-Type', /application\/json/)
-
   assert.strictEqual(created.body.likes, 0)
 })
 
@@ -84,7 +76,6 @@ test('if a blog is missing the title respond with 400', async () => {
     author: 'author 5',
     url: 'url 5',
   }
-
   await api
     .post('/api/blogs')
     .send(newBlog)
@@ -96,7 +87,13 @@ test('if a blog is missing the url respond with 400', async () => {
     title: 'title 5',
     author: 'author 5'
   }
-
   await api.post('/api/blogs').send(newBlog)
     .expect(400)
+})
+
+test('can delete a blog', async () => {
+  const blogs = await helper.blogsInDb()
+  await api.delete(`/api/blogs/${blogs[0].id}`).expect(204)
+  const blogsAtEnd = await helper.blogsInDb()
+  assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length - 1)
 })
