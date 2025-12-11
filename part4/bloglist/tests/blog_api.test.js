@@ -99,5 +99,20 @@ test('can delete a blog', async () => {
 })
 
 test('can update a blog', async () => {
-  
+    const blogs = await helper.blogsInDb()
+    const toUpdate = { ...blogs[0] }
+    toUpdate.likes = 999
+
+    const blogToBeUpdated = blogs[0]
+
+    await api
+      .put(`/api/blogs/${blogToBeUpdated.id}`)
+      .send(blogToBeUpdated)
+      .expect(200)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    const updatedBlog = blogsAtEnd.find(
+      (blog) => blog.id === blogToBeUpdated.id
+    )
+    assert.deepStrictEqual(updatedBlog, blogToBeUpdated)
 })
